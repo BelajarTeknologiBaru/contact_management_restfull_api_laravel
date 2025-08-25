@@ -11,6 +11,7 @@ services:
         volumes:
             # Mount kode untuk development agar perubahan langsung terlihat
             - .:/app
+            - /app/vendor
         environment:
             - APP_NAME=Laravel
             - APP_ENV=local

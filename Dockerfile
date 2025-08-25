@@ -27,6 +27,8 @@ COPY . .
 # Salin dependensi dari stage 'vendor'
 COPY --from=vendor /app/vendor/ vendor/
 
+RUN adduser -D -u 1000 -g 'frankenphp' frankenphp
+
 # Set kepemilikan file agar sesuai dengan user FrankenPHP (penting untuk permission)
 RUN chown -R frankenphp:frankenphp .
 

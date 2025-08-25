@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\ApiAuthMiddleware;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -20,10 +19,22 @@ use Illuminate\Support\Facades\Route;
 //     return $request->user();
 // });
 
-Route::post("/users",[UserController::class,'register']);
-Route::post("/users/login",[UserController::class,'login']);
+Route::get("/auth/session", function () {
+    return response()->json([
+        "data" => [
+            "id" => uuid_create(UUID_TYPE_RANDOM),
+            "name" => "Ahmad Zidni",
+            "avatarUrl" => "https://avatars.githubusercontent.com/u/55963299?v=4",
+            "email" => "ahmad@gmail.com"
 
-Route::middleware(ApiAuthMiddleware::class)->group(function(){
-    Route::get("/users/current",[UserController::class,'getUser']);
-    Route::patch("/users/current",[UserController::class,'updateUser']);
+        ]
+    ], 200);
+});
+
+Route::post("/users", [UserController::class, 'register']);
+Route::post("/users/login", [UserController::class, 'login']);
+
+Route::middleware(ApiAuthMiddleware::class)->group(function () {
+    Route::get("/users/current", [UserController::class, 'getUser']);
+    Route::patch("/users/current", [UserController::class, 'updateUser']);
 });

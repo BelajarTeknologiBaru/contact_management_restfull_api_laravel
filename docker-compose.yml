@@ -1,0 +1,56 @@
+services:
+    # Layanan Aplikasi Laravel (FrankenPHP)
+    app:
+        build:
+            context: . # Gunakan Dockerfile di direktori saat ini
+            dockerfile: Dockerfile
+        restart: unless-stopped
+        ports:
+            - "8000:80" # Hubungkan port 8000 di host ke port 80 di container
+            - "443:443" # Untuk HTTPS (FrankenPHP mendukung HTTPS otomatis)
+        volumes:
+            # Mount kode untuk development agar perubahan langsung terlihat
+            - .:/app
+        environment:
+            - APP_NAME=Laravel
+            - APP_ENV=local
+            - APP_KEY= # Akan diisi dari .env
+            - APP_DEBUG=true
+            - APP_URL=http://localhost:8000
+            - DB_CONNECTION=mysql
+            - DB_HOST=db # Nama service database
+            - DB_PORT=3306
+            - DB_DATABASE=laravel
+            - DB_USERNAME=user
+            - DB_PASSWORD=password
+            - REDIS_HOST=redis # Nama service Redis
+        depends_on:
+            - db
+            - redis
+
+    # Layanan Database (MySQL)
+    db:
+        image: mysql:8.0
+        restart: unless-stopped
+        environment:
+            MYSQL_DATABASE: laravel
+            MYSQL_USER: user
+            MYSQL_PASSWORD: password
+            MYSQL_ROOT_PASSWORD: rootpassword
+        volumes:
+            - db-data:/var/lib/mysql # Volume untuk persistensi data database
+        ports:
+            - "33061:3306" # Hubungkan ke port 33061 di host agar tidak konflik
+        healthcheck:
+            test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+            timeout: 20s
+            retries: 10
+
+    # Layanan Redis (untuk Cache, Session, Queue)
+    redis:
+        image: redis:alpine
+        restart: unless-stopped
+
+# Volumes untuk persistensi data
+volumes:
+    db-data:

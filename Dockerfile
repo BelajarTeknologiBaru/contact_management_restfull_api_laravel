@@ -1,5 +1,4 @@
-# Stage 1: Install dependensi Composer MENGGUNAKAN PHP 8.3
-# Kita gunakan image resmi PHP 8.3 dan install Composer di dalamnya
+# Stage 1: Install dependensi Composer menggunakan PHP 8.3
 FROM php:8.3-cli-alpine as vendor
 
 # Install Composer
@@ -12,16 +11,12 @@ WORKDIR /app
 COPY database/ database/
 COPY composer.json composer.json
 COPY composer.lock composer.lock
-# Install dependensi produksi saja
-RUN composer install --no-interaction --no-dev --optimize-autoloader
+# Install dependensi produksi saja TANPA MENJALANKAN SCRIPT ARTISAN
+RUN composer install --no-interaction --no-dev --optimize-autoloader --no-scripts
 
 
-# Stage 2: Bangun image final (BAGIAN INI SUDAH BENAR)
-# Gunakan image resmi FrankenPHP dengan PHP 8.3 berbasis Alpine untuk ukuran yang lebih kecil
+# Stage 2: Bangun image final
 FROM dunglas/frankenphp:1-php8.3-alpine AS final
-
-# Set ENV agar FrankenPHP menggunakan Octane
-ENV FRANKENPHP_CONFIG "import /etc/caddy/frankenphp.ini; { order php_server before file_server; php_server { transport octanize { app_root /app binary /usr/local/bin/frankenphp-worker } } }"
 
 # Install ekstensi PHP yang umum dibutuhkan Laravel
 RUN docker-php-ext-install pdo pdo_mysql bcmath opcache
@@ -35,8 +30,11 @@ COPY --from=vendor /app/vendor/ vendor/
 # Set kepemilikan file agar sesuai dengan user FrankenPHP (penting untuk permission)
 RUN chown -R frankenphp:frankenphp .
 
-# Jalankan optimisasi (lebih baik dari migrate saat build)
-RUN php artisan optimize
+# ---- PERUBAHAN UTAMA DI SINI ----
+# Hapus ENV FRANKENPHP_CONFIG
 
-# Expose port yang digunakan FrankenPHP (80, 443, 2019)
-EXPOSE 80 443 2019
+# Tentukan port yang akan diekspos oleh Octane
+EXPOSE 8000
+
+# Jalankan server Octane dengan FrankenPHP sebagai ENTRYPOINT
+ENTRYPOINT ["php", "artisan", "octane:start", "--server=frankenphp", "--host=0.0.0.0", "--port=8000"]

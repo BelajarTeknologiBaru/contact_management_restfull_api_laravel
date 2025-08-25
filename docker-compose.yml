@@ -6,8 +6,8 @@ services:
             dockerfile: Dockerfile
         restart: unless-stopped
         ports:
-            - "8000:80" # Hubungkan port 8000 di host ke port 80 di container
-            - "443:443" # Untuk HTTPS (FrankenPHP mendukung HTTPS otomatis)
+            - "8000:8000" # Hubungkan port 8000 di host ke port 80 di container
+
         volumes:
             # Mount kode untuk development agar perubahan langsung terlihat
             - .:/app

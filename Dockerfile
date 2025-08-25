@@ -19,7 +19,7 @@ RUN composer install --no-interaction --no-dev --optimize-autoloader --no-script
 FROM dunglas/frankenphp:1-php8.3-alpine AS final
 
 # Install ekstensi PHP yang umum dibutuhkan Laravel
-RUN docker-php-ext-install pdo pdo_mysql bcmath opcache
+RUN docker-php-ext-install pdo pdo_mysql bcmath opcache pcntl
 
 # Salin file aplikasi dari direktori lokal ke dalam image
 COPY . .
